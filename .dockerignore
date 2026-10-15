@@ -1,0 +1,12 @@
+**/node_modules
+**/bin
+**/obj
+**/.vs
+**/.vscode
+backend/BookNook.Api/wwwroot
+backend/BookNook.Tests
+_legacy
+.git
+.env
+.env.*
+**/*.log
