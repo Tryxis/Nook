@@ -356,14 +356,16 @@ textarea {
   font-optical-sizing: auto;
 }
 
+/* The spec's 0.86–0.94 line-heights suit Heldane; Fraunces' ascenders and descenders span 1.04em,
+   so anything tighter lets wrapped lines collide ("up" over "left off"). 1.06 leaves a small gap. */
 .display {
   font-size: clamp(48px, 7vw, 80px);
-  line-height: 0.88;
+  line-height: 1.06;
 }
 
 .h1 {
   font-size: clamp(36px, 5vw, 48px);
-  line-height: 0.94;
+  line-height: 1.06;
 }
 
 .h2 {
