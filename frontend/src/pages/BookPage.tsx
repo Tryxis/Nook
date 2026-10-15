@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import {
+  useCoverCandidates,
   useDeleteBookmark,
   useDeleteRead,
   useEntry,
   useRemoveEntry,
   useSaveBookmark,
   useSaveRead,
+  useSetCover,
   useSetShelves,
   useShelves,
   useUpdateEntry,
@@ -74,7 +76,10 @@ function BookView({ entry }: { entry: UserBookDetail }) {
     <>
       <section className="band band--hero">
         <div className="container book-hero">
-          <Cover src={book.coverUrl} title={book.title} author={book.authors[0]} eager />
+          <div className="stack" style={{ gap: 12, alignItems: 'start' }}>
+            <Cover src={book.coverUrl} title={book.title} author={book.authors[0]} eager />
+            <CoverPicker entry={entry} />
+          </div>
           <div className="stack stack--lg">
             <div className="stack" style={{ gap: 12 }}>
               <h1 className="h1" style={{ fontSize: 'clamp(36px, 5vw, 56px)' }}>
@@ -166,6 +171,80 @@ function BookView({ entry }: { entry: UserBookDetail }) {
 /** Formats combine freely: a book can be read in print and listened to as well. */
 function toggleFormat(current: BookFormat[], f: BookFormat): BookFormat[] {
   return current.includes(f) ? current.filter((x) => x !== f) : FORMATS.filter((x) => x === f || current.includes(x))
+}
+
+// ---- Cover picker ----
+
+function CoverPicker({ entry }: { entry: UserBookDetail }) {
+  const [open, setOpen] = useState(false)
+  const candidates = useCoverCandidates(entry.id, open)
+  const setCover = useSetCover(entry.id)
+  const current = candidates.data?.current ?? null
+  const [broken, setBroken] = useState<Set<string>>(new Set())
+
+  const choose = (choice: string | null) =>
+    setCover.mutate(choice, {
+      onSuccess: () => {
+        setOpen(false)
+        toast(choice ? 'Cover updated' : 'Back to the default cover')
+      },
+      onError: (e) => toast((e as Error).message),
+    })
+
+  // Some editions list a cover that no longer exists; drop those from the grid once they fail to load.
+  const visible = (candidates.data?.candidates ?? []).filter((c) => !broken.has(c.id))
+
+  return (
+    <>
+      <button className="link small" onClick={() => setOpen(true)} style={{ color: 'var(--hero-soft)' }}>
+        Change cover
+      </button>
+      <Modal open={open} onClose={() => setOpen(false)} title="Choose a cover" wide>
+        <div className="stack stack--lg">
+          <p className="small muted" style={{ margin: 0 }}>
+            Covers from other editions. Your choice only changes your copy.
+          </p>
+          {candidates.isLoading ? (
+            <p className="muted">Finding covers…</p>
+          ) : visible.length === 0 ? (
+            <p className="muted">No other covers found for this book.</p>
+          ) : (
+            <div className="cover-picker">
+              {visible.map((c) => (
+                <button
+                  key={c.id}
+                  className="cover-picker__option"
+                  aria-pressed={current === c.id}
+                  disabled={setCover.isPending}
+                  onClick={() => choose(c.id)}
+                  title={[c.source, c.label].filter(Boolean).join(' · ')}
+                >
+                  <img
+                    src={c.thumbUrl}
+                    alt={`${c.source} cover${c.label ? `, ${c.label}` : ''}`}
+                    loading="lazy"
+                    onError={() => setBroken((b) => new Set(b).add(c.id))}
+                    onLoad={(e) => {
+                      // Open Library serves a 1×1 image for some missing covers.
+                      if (e.currentTarget.naturalWidth < 20) setBroken((b) => new Set(b).add(c.id))
+                    }}
+                  />
+                  <span className="caption muted">{c.label ?? c.source}</span>
+                </button>
+              ))}
+            </div>
+          )}
+          {current && (
+            <div>
+              <button className="btn btn--ghost btn--sm" onClick={() => choose(null)} disabled={setCover.isPending}>
+                Use the default cover
+              </button>
+            </div>
+          )}
+        </div>
+      </Modal>
+    </>
+  )
 }
 
 // ---- Review ----

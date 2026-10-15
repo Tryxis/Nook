@@ -51,7 +51,7 @@ public static class SearchResultMerger
             if (match is not null)
             {
                 unused.Remove(match);
-                merged.Add(Enrich(p, match));
+                merged.Add(Enrich(p, match, preferSecondaryCover: IsSameEdition(p, match)));
             }
             else
             {
@@ -75,7 +75,12 @@ public static class SearchResultMerger
             .ToList();
     }
 
-    public static BookSearchResult Enrich(BookSearchResult p, BookSearchResult s) => p with
+    /// <param name="preferSecondaryCover">
+    /// Use the secondary (Google) cover even when the primary has one. Google covers are publisher
+    /// artwork at ~800px, where Open Library's are often photos of physical copies, so prefer them
+    /// whenever we're confident it's the same edition.
+    /// </param>
+    public static BookSearchResult Enrich(BookSearchResult p, BookSearchResult s, bool preferSecondaryCover = false) => p with
     {
         Subtitle = p.Subtitle ?? s.Subtitle,
         Authors = p.Authors.Count > 0 ? p.Authors : s.Authors,
@@ -83,7 +88,7 @@ public static class SearchResultMerger
         Isbn10 = p.Isbn10 ?? s.Isbn10,
         GoogleVolumeId = p.GoogleVolumeId ?? s.GoogleVolumeId,
         OpenLibraryId = p.OpenLibraryId ?? s.OpenLibraryId,
-        CoverUrl = p.CoverUrl ?? s.CoverUrl,
+        CoverUrl = preferSecondaryCover && s.CoverUrl is not null ? s.CoverUrl : p.CoverUrl ?? s.CoverUrl,
         PageCount = p.PageCount ?? s.PageCount,
         PublishedYear = p.PublishedYear ?? s.PublishedYear,
         Publisher = p.Publisher ?? s.Publisher,
@@ -91,6 +96,15 @@ public static class SearchResultMerger
         Subjects = p.Subjects.Count > 0 ? p.Subjects : s.Subjects,
         AllIsbns = p.AllIsbns.Union(s.AllIsbns).ToList(),
     };
+
+    /// <summary>
+    /// Shares an ISBN <em>and</em> a title. The ISBN alone isn't enough: an Open Library work lists the
+    /// ISBNs of every edition, translations included, so a French edition on Google would match an
+    /// English work by ISBN.
+    /// </summary>
+    public static bool IsSameEdition(BookSearchResult a, BookSearchResult b) =>
+        a.AllIsbns.Count > 0 && b.AllIsbns.Count > 0 && a.AllIsbns.Intersect(b.AllIsbns).Any()
+        && NormaliseTitle(a.Title) == NormaliseTitle(b.Title);
 
     public static bool IsSameBook(BookSearchResult a, BookSearchResult b)
     {

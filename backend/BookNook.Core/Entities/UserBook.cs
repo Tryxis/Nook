@@ -53,6 +53,9 @@ public class UserBook
     public bool IsFavorite { get; set; }
     public int? CurrentPage { get; set; }
 
+    /// <summary>This user's preferred cover ("ol:{id}" / "gb:{id}"), overriding the shared book cover.</summary>
+    public string? CoverChoice { get; set; }
+
     public DateTime AddedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 

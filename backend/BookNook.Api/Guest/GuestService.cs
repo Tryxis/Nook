@@ -67,6 +67,7 @@ public class GuestService(AppDbContext db, UserManager<AppUser> users, SignInMan
                 ReviewUpdatedAt = e.Review is null ? null : now.AddDays(-(e.FinishedDaysAgo ?? 0)),
                 IsFavorite = e.Favorite,
                 Formats = e.Formats,
+                CoverChoice = e.CoverChoice,
                 CurrentPage = e.Status == ReadingStatus.Finished ? book.PageCount : e.CurrentPage,
                 AddedAt = now.AddDays(-(e.StartedDaysAgo ?? 1) - 2),
                 // Most recent activity first in "recently updated" lists.

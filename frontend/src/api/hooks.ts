@@ -2,6 +2,7 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tansta
 import { api } from './client'
 import type {
   BookFormat,
+  CoverCandidate,
   ReadingStatus,
   SearchResult,
   Shelf,
@@ -177,6 +178,21 @@ export function useAddToLibrary() {
 
 export function useUpdateEntry(id: string) {
   return useEntryMutation(id, (body: UpdateUserBook) => api<UserBookDetail>(`/library/${id}`, { method: 'PUT', json: body }))
+}
+
+export function useCoverCandidates(id: string, enabled: boolean) {
+  return useQuery({
+    queryKey: ['library', 'covers', id],
+    queryFn: () => api<{ current: string | null; candidates: CoverCandidate[] }>(`/library/${id}/covers`),
+    enabled,
+    staleTime: 60 * 60_000,
+  })
+}
+
+export function useSetCover(id: string) {
+  return useEntryMutation(id, (choice: string | null) =>
+    api<UserBookDetail>(`/library/${id}/cover`, { method: 'PUT', json: { choice } }),
+  )
 }
 
 export function useUpdateProgress(id: string) {

@@ -56,8 +56,11 @@ public class BookSearchService(
         // Enrich a refetched Open Library result from Google using its ISBN.
         if (provider == openLibrary && result.Isbn13 is not null && google.IsEnabled)
         {
-            var extra = await SafeSearch(google, $"isbn:{result.Isbn13}", 1, ct);
-            if (extra.Count > 0) result = SearchResultMerger.Enrich(result, extra[0]);
+            // Plain ISBN keyword: Google's isbn: filter currently returns nothing.
+            var extra = await SafeSearch(google, result.Isbn13, 1, ct);
+            if (extra.Count > 0)
+                result = SearchResultMerger.Enrich(result, extra[0],
+                    preferSecondaryCover: SearchResultMerger.NormaliseTitle(result.Title) == SearchResultMerger.NormaliseTitle(extra[0].Title));
         }
 
         cache.Set(ResultKey(resultId), result, ResultTtl);

@@ -1779,3 +1779,48 @@ main.band--hero:first-child {
   align-items: center;
   gap: 6px;
 }
+
+/* ---- Cover picker --------------------------------------------------------- */
+
+.cover-picker {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 16px 12px;
+}
+
+.cover-picker__option {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 6px;
+  border: 0;
+  border-radius: var(--radius-card);
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  color: inherit;
+}
+
+.cover-picker__option img {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  border-radius: 4px;
+  background: var(--fog);
+  box-shadow: var(--shadow-cover);
+}
+
+.cover-picker__option:hover img {
+  transform: translateY(-2px);
+}
+
+.cover-picker__option[aria-pressed='true'] {
+  box-shadow: inset 0 0 0 2.5px var(--primary-bg);
+}
+
+@media (max-width: 560px) {
+  .cover-picker {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px 8px;
+  }
+}

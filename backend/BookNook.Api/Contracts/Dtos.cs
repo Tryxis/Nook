@@ -87,6 +87,10 @@ public record ReadThroughRequest(DateOnly? StartedOn, DateOnly? FinishedOn, bool
 
 public record BookmarkRequest([Range(0, 100_000)] int? Page, [Range(0, 100)] decimal? Percent, [MaxLength(2000)] string? Note);
 
+public record SetCoverRequest([MaxLength(64)] string? Choice);
+
+public record CoverCandidatesDto(string? Current, IReadOnlyList<BookNook.Infrastructure.Search.CoverCandidate> Candidates);
+
 public record SetShelvesRequest([Required] IReadOnlyList<Guid> ShelfIds);
 
 // ---- Shelves ----

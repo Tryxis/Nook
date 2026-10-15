@@ -52,6 +52,7 @@ builder.Services.AddAuthorization();
 builder.Services.Configure<SecurityStampValidatorOptions>(o => o.ValidationInterval = TimeSpan.FromMinutes(1));
 
 builder.Services.AddScoped<GuestService>();
+builder.Services.AddScoped<BookNook.Api.Contracts.CoverProxy>();
 builder.Services.AddHostedService<GuestCleanupService>();
 
 builder.Services.AddRateLimiter(o =>

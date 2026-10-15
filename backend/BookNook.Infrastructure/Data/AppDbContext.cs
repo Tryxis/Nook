@@ -58,6 +58,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbCo
             e.HasIndex(x => new { x.UserId, x.Status });
             e.Property(x => x.Rating).HasPrecision(2, 1);
             e.Property(x => x.Review).HasMaxLength(10_000);
+            e.Property(x => x.CoverChoice).HasMaxLength(64);
             e.Property(x => x.Status).HasConversion<string>().HasMaxLength(20);
             // Formats is a [Flags] enum stored as an int bit field, so "has audiobook" filters run in SQL.
             e.HasOne(x => x.User).WithMany(u => u.Books).HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);

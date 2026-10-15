@@ -170,6 +170,44 @@ public class LibraryController(AppDbContext db, BookSearchService search) : ApiC
         return ub.ToDetail();
     }
 
+    // ---- Cover ----
+
+    /// <summary>Other covers this book could use (other editions on Open Library, matching Google volumes).</summary>
+    [HttpGet("{id:guid}/covers")]
+    public async Task<ActionResult<CoverCandidatesDto>> CoverCandidates(Guid id, [FromServices] CoverCandidatesService candidates, CancellationToken ct)
+    {
+        var ub = await db.UserBooks.Include(x => x.Book).AsNoTracking().FirstOrDefaultAsync(x => x.Id == id && x.UserId == UserId, ct);
+        if (ub is null) return NotFound();
+        return new CoverCandidatesDto(ub.CoverChoice, await candidates.GetAsync(ub.Book, ct));
+    }
+
+    /// <summary>Choose a cover for your copy only (null resets to the default).</summary>
+    [HttpPut("{id:guid}/cover")]
+    public async Task<ActionResult<UserBookDetailDto>> SetCover(Guid id, SetCoverRequest req, CancellationToken ct)
+    {
+        if (req.Choice is not null && !CoverUrls.IsValidChoice(req.Choice)) return Invalid("choice", "That isn't a valid cover.");
+        var ub = await FindAsync(id, ct);
+        if (ub is null) return NotFound();
+
+        ub.CoverChoice = req.Choice;
+        ub.UpdatedAt = DateTime.UtcNow;
+        await db.SaveChangesAsync(ct);
+        return ub.ToDetail();
+    }
+
+    /// <summary>Serves the cover this user sees for this entry (their choice, else the book's).</summary>
+    [HttpGet("{id:guid}/cover")]
+    [ResponseCache(Duration = 60 * 60 * 24 * 7, Location = ResponseCacheLocation.Client)]
+    public async Task<IActionResult> Cover(Guid id, [FromServices] CoverProxy covers, CancellationToken ct)
+    {
+        var row = await db.UserBooks
+            .Where(x => x.Id == id && x.UserId == UserId)
+            .Select(x => new { x.CoverChoice, x.Book.CoverUrl })
+            .FirstOrDefaultAsync(ct);
+        var url = row?.CoverChoice is { } c ? CoverUrls.FromChoice(c) : row?.CoverUrl;
+        return url is null ? NotFound() : await covers.GetAsync(url, ct);
+    }
+
     // ---- Read-throughs ----
 
     [HttpPost("{id:guid}/reads")]

@@ -37,12 +37,25 @@ public static class DependencyInjection
             c.BaseAddress = new Uri("https://www.googleapis.com/books/v1/");
             c.Timeout = TimeSpan.FromSeconds(8);
         });
+        // Named clients for the cover picker (same hosts as the providers).
+        services.AddHttpClient("openlibrary", c =>
+        {
+            c.BaseAddress = new Uri("https://openlibrary.org/");
+            c.DefaultRequestHeaders.UserAgent.ParseAdd(UserAgent);
+            c.Timeout = TimeSpan.FromSeconds(10);
+        });
+        services.AddHttpClient("googlebooks", c =>
+        {
+            c.BaseAddress = new Uri("https://www.googleapis.com/books/v1/");
+            c.Timeout = TimeSpan.FromSeconds(8);
+        });
         services.AddHttpClient("covers", c =>
         {
             c.DefaultRequestHeaders.UserAgent.ParseAdd(UserAgent);
             c.Timeout = TimeSpan.FromSeconds(10);
         });
         services.AddScoped<BookSearchService>();
+        services.AddScoped<CoverCandidatesService>();
 
         return services;
     }

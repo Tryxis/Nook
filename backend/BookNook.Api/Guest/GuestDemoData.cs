@@ -24,7 +24,8 @@ public static class GuestDemoData
         int? CurrentPage = null,
         (int Page, string Note)[]? Bookmarks = null,
         string[]? Shelves = null,
-        (int StartedDaysAgo, int FinishedDaysAgo)? EarlierRead = null);
+        (int StartedDaysAgo, int FinishedDaysAgo)? EarlierRead = null,
+        string? CoverChoice = null);
 
     public static readonly DemoBook[] Books =
     [
@@ -80,11 +81,14 @@ public static class GuestDemoData
         new("9780735219090", ReadingStatus.Finished, 4m, null, StartedDaysAgo: 300, FinishedDaysAgo: 290, Shelves: ["Book club"]),
         new("9780547928227", ReadingStatus.Finished, 4.5m,
             "Read it aloud over a winter. Still the coziest adventure ever written.",
-            StartedDaysAgo: 420, FinishedDaysAgo: 395, Shelves: ["Comfort reads"]),
+            StartedDaysAgo: 420, FinishedDaysAgo: 395, Shelves: ["Comfort reads"],
+            // Open Library's default scan has a library barcode sticker; use HarperCollins' Alan Lee cover.
+            CoverChoice: "gb:OlCHcjX0RT4C"),
         new("9780307744432", ReadingStatus.Reading, Formats: BookFormat.Print, StartedDaysAgo: 9, CurrentPage: 214,
             Bookmarks: [(97, "The ice garden."), (214, "Stopped here, Celia and Marco finally meet properly.")]),
         new("9780525559474", ReadingStatus.Reading, Formats: BookFormat.Ebook, StartedDaysAgo: 3, CurrentPage: 58),
-        new("9780385737951", ReadingStatus.WantToRead, Formats: BookFormat.None, Shelves: ["Book club"]),
+        // Open Library's default is a photo with glare; use the publisher artwork.
+        new("9780385737951", ReadingStatus.WantToRead, Formats: BookFormat.None, Shelves: ["Book club"], CoverChoice: "gb:yo5GBAAAQBAJ"),
     ];
 
     public static readonly string[] ShelfNames = ["Comfort reads", "Book club"];

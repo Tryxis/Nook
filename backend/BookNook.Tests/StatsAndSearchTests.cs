@@ -138,3 +138,56 @@ public class SearchResultMergerTests
         Assert.Equal(["ol:2", "gb:g1", "ol:1"], merged.Select(m => m.Id));
     }
 }
+
+public class CoverTests
+{
+    [Fact]
+    public void Google_thumbnails_are_upgraded_to_the_large_size_once()
+    {
+        var thumb = "http://books.google.com/books/content?id=abc123&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api";
+        var large = CoverUrls.UpgradeGoogle(thumb);
+        Assert.StartsWith("https://", large);
+        Assert.DoesNotContain("edge=curl", large);
+        Assert.Contains("fife=w800-h1200", large);
+        Assert.Equal(large, CoverUrls.UpgradeGoogle(large));
+        Assert.Equal("https://covers.openlibrary.org/b/id/1-L.jpg", CoverUrls.UpgradeGoogle("https://covers.openlibrary.org/b/id/1-L.jpg"));
+    }
+
+    [Theory]
+    [InlineData("ol:12345", true)]
+    [InlineData("gb:CnSJEQAAQBAJ", true)]
+    [InlineData("ol:-1", false)]
+    [InlineData("ol:abc", false)]
+    [InlineData("gb:../../etc", false)]
+    [InlineData("https://evil.example/x.jpg", false)]
+    public void Only_well_formed_choices_map_to_a_url(string choice, bool valid)
+    {
+        Assert.Equal(valid, CoverUrls.IsValidChoice(choice));
+        var url = CoverUrls.FromChoice(choice);
+        if (valid) Assert.Matches(@"^https://(covers\.openlibrary\.org|books\.google\.com)/", url!);
+    }
+
+    private static BookSearchResult R(string id, string title, string? cover, params string[] isbns) => new()
+    {
+        Id = id, Title = title, Authors = ["Author Name"], CoverUrl = cover, AllIsbns = isbns,
+    };
+
+    [Fact]
+    public void Same_edition_match_prefers_the_google_cover()
+    {
+        var merged = SearchResultMerger.Merge(
+            [R("ol:1", "The Hobbit", "ol-cover", "9780547928227", "9782070612888")],
+            [R("gb:1", "The Hobbit", "gb-cover", "9780547928227")]);
+        Assert.Equal("gb-cover", Assert.Single(merged).CoverUrl);
+    }
+
+    [Fact]
+    public void Isbn_match_with_a_different_title_keeps_the_open_library_cover()
+    {
+        // An Open Library work lists translations' ISBNs too; a French edition must not supply the cover.
+        var merged = SearchResultMerger.Merge(
+            [R("ol:1", "Harry Potter and the Philosopher's Stone", "ol-cover", "9781408855652", "9782070584628")],
+            [R("gb:1", "Harry Potter à l'école des sorciers", "gb-cover", "9782070584628")]);
+        Assert.Equal("ol-cover", Assert.Single(merged).CoverUrl);
+    }
+}

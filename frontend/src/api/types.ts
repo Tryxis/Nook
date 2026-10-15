@@ -115,6 +115,13 @@ export interface SearchResult {
   description: string | null
 }
 
+export interface CoverCandidate {
+  id: string
+  thumbUrl: string
+  source: 'Open Library' | 'Google Books'
+  label: string | null
+}
+
 export interface Shelf {
   id: string
   name: string

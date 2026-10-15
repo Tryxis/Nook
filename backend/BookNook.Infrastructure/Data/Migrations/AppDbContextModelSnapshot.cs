@@ -271,6 +271,10 @@ namespace BookNook.Infrastructure.Data.Migrations
                     b.Property<Guid>("BookId")
                         .HasColumnType("uuid");
 
+                    b.Property<string>("CoverChoice")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
                     b.Property<int?>("CurrentPage")
                         .HasColumnType("integer");
 

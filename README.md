@@ -89,7 +89,9 @@ blocks SMTP; an HTTPS email API such as Resend would be needed to add self-servi
 
 - **Guest mode:** creates a temporary account with sample data. Guest accounts are deleted after
   24 hours. Sign-ups are rate limited per IP.
-- **Covers:** served through `/api/books/{id}/cover`, so share images can be exported from the canvas.
+- **Covers:** served through the API so share images can be exported from the canvas. Google covers
+  are requested at the large size and preferred over Open Library when both results share an ISBN and
+  title. Users can pick a different edition's cover for their copy (`CoverCandidatesService`).
 - **Share images:** rendered client-side at 1080×1920 or 1080×1350 (`frontend/src/lib/shareImage.ts`).
 - **Themes:** Classic, Vaporwave, Monochrome and Cosy pastel, defined as CSS variables in
   `frontend/src/index.css`. The selected theme is stored in `localStorage`.

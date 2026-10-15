@@ -20,16 +20,18 @@ public class ShelvesController(AppDbContext db) : ApiControllerBase
                 Count = s.Books.Count,
                 Audiobooks = s.Books.Count(b => (b.Formats & BookFormat.Audiobook) != 0),
                 Covers = s.Books
-                    .Where(b => b.Book.CoverUrl != null)
+                    .Where(b => b.CoverChoice != null || b.Book.CoverUrl != null)
                     .OrderByDescending(b => b.UpdatedAt)
-                    .Select(b => b.Book.Id)
+                    .Select(b => new { b.Id, b.CoverChoice, BookId = b.Book.Id })
                     .Take(4)
                     .ToList(),
             })
             .ToListAsync(ct);
 
         return shelves
-            .Select(s => new ShelfDto(s.Id, s.Name, s.Description, s.Count, s.Audiobooks, s.Covers.Select(id => $"/api/books/{id}/cover").ToList(), s.CreatedAt))
+            .Select(s => new ShelfDto(s.Id, s.Name, s.Description, s.Count, s.Audiobooks, s.Covers.Select(c => c.CoverChoice is null
+                    ? $"/api/books/{c.BookId}/cover"
+                    : $"/api/library/{c.Id}/cover?c={Uri.EscapeDataString(c.CoverChoice)}").ToList(), s.CreatedAt))
             .ToList();
     }
 

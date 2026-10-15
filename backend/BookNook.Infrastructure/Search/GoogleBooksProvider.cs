@@ -81,9 +81,8 @@ public partial class GoogleBooksProvider(HttpClient http, IOptions<GoogleBooksOp
     private static string? CoverUrl(GbImageLinks? links)
     {
         var url = links?.Thumbnail ?? links?.SmallThumbnail;
-        if (url is null) return null;
-        // Google serves http links with a page-curl effect; upgrade both.
-        return url.Replace("http://", "https://").Replace("&edge=curl", "");
+        // The API hands out 128px thumbnails; ask for the large scan instead.
+        return url is null ? null : CoverUrls.UpgradeGoogle(url);
     }
 
     private static string? StripHtml(string? html) =>
