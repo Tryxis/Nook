@@ -1,0 +1,18 @@
+# Render Blueprint: in the Render dashboard choose New → Blueprint and point it at this repo.
+# Secrets marked `sync: false` are entered in the dashboard; they are never stored in this file.
+services:
+  - type: web
+    name: nook
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: ConnectionStrings__BookNook
+        sync: false
+      - key: GoogleBooks__ApiKey
+        sync: false
+      # Apply EF Core migrations on each deploy.
+      - key: Database__MigrateOnStartup
+        value: "true"

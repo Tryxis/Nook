@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="BookNook.Api/BookNook.Api.csproj" />
+  <Project Path="BookNook.Core/BookNook.Core.csproj" />
+  <Project Path="BookNook.Infrastructure/BookNook.Infrastructure.csproj" />
+  <Project Path="BookNook.Tests/BookNook.Tests.csproj" />
+</Solution>
